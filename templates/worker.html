@@ -1,0 +1,249 @@
+<html>
+  <head>
+
+
+
+  <meta charset="utf-8">
+  
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+
+
+
+  </head>
+
+
+  <body>
+    
+     <h1> Hi, I am a worker</h1>
+
+     <textarea id="mytext" rows="20" cols="150">
+
+
+     </textarea>
+
+     <button type="button" id="mybutton">update</button>
+     <button type="button" id="mybuttonReset">Reset</button>
+
+
+
+     <script type="text/javascript" charset="utf-8">
+
+
+
+      class DataPacket{
+            constructor() {
+
+             this.previousRawData = null;
+             this.rawData = null;
+             this.diff = null;
+
+            }
+
+            reset() {
+
+		     this.previousRawData = null;
+		     this.rawData = null;
+		     this.diff = null;
+
+            }
+
+            setNewData(rawData){
+              
+              this.previousRawData = this.rawData;
+              this.rawData = rawData;
+
+            }
+
+            findDifferences(){
+
+               var diff = new Object();
+               diff['D'] = [];
+               diff['M'] = new Object();
+               diff['N'] = new Object();
+                
+               //trivial case
+               if(this.previousRawData == null){
+               
+                  //diff['D'] = null;
+                  //diff['M'] = null;
+                  diff['N'] = this.rawData;
+
+               }else{
+
+                  //_____________finding the D and M___________
+                  for(var key in this.previousRawData) {
+
+                     if(this.rawData[key] == undefined){
+                       diff['D'].push(key);
+                     }else{
+                       //check if data has been modified 
+                       var p_lat = this.previousRawData[key][0];
+                       var p_lon = this.previousRawData[key][1];
+                       var p_state = this.previousRawData[key][2];
+
+                       var lat = this.rawData[key][0];
+                       var lon = this.rawData[key][1];
+                       var state = this.rawData[key][2];
+
+                       if((p_lat != lat) || (p_lon != lon) || (p_state != state)){
+
+                         diff['M'][key] = [lat, lon, state];
+
+                       }
+
+                     }//if(this.rawData[key] == undefined){
+                       
+
+                  }
+                  //_____________________________________
+
+                  //_____________finding N_______________
+                  for(var key in this.rawData) {
+                   
+                     if(this.previousRawData[key] == undefined){
+                    
+                        diff['N'][key] = this.rawData[key];
+
+                     }
+
+                  }
+                  //_____________________________________
+
+
+
+               }
+
+
+               this.diff = diff;
+
+            }
+
+            printDiff(){
+
+               console.log(this.diff);
+
+            }
+
+
+
+
+      }
+
+      
+
+
+
+      //https://flask-socketio.readthedocs.io/en/latest/
+
+      var socket_worker = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/worker', { transports: ['websocket'] });
+      console.log(location.protocol + '//' + document.domain + ':' + location.port + '/worker');
+
+      socket_worker.on('start', function(msg) {
+         
+          //alert('conexion establecida');
+
+       });
+
+
+      dataPacket = new DataPacket();
+
+
+
+      
+      
+      $('#mybutton').click(function() {
+
+            var text = $('#mytext').val();
+            //console.log(text);
+            var obj = JSON.parse(text);
+            console.log(obj);
+            dataPacket.setNewData(obj);
+            dataPacket.findDifferences();
+            dataPacket.printDiff();
+            //console.log(dataPacket.diff);
+            
+            socket_worker.emit('new_data', dataPacket.diff);
+
+
+    
+      });
+
+
+      $('#mybuttonReset').click(function() {
+        dataPacket.reset();
+        socket_worker.emit('reset',{});    
+
+      });
+
+      socket_worker.on('disconnect', function() {
+        
+         dataPacket.reset();
+
+      });
+
+      
+
+      socket_worker.on('updateWorker', function(data) {
+
+         console.log('updateWorker');
+         console.log(data);
+
+      });
+
+
+
+      /*
+
+      socket.on('echo', function(data, callback){
+        
+        callback("hello form javascrip echo");
+  
+      });
+
+     //receive details from server
+     socket_test.on('newnumber', function(msg) {
+        console.log("Received number" + msg.number);
+        $('#response').html('<p>'+msg.number+'</p>');
+     });
+
+
+
+     socket_test.on('disconnect', function() {
+        
+        alert("disconect");
+
+     });
+
+      
+      function send(){
+        console.log("before")
+        socket.emit('send_message', {message : $('form textarea').val()});
+        console.log("after")
+      }
+
+     function connectRoom(){
+        console.log($('#username').val())
+        var room = $('#username').val()
+        socket_room.emit('join', { 'username': $('#username').val(), 'room': room })
+     }
+
+     // When a user joins a room announce it to the users in the room
+     socket_room.on('join room', data => {
+	    const user = data['username']
+	    console.log(user + ' has joined the room')
+	    const message = 'joined the room'
+	    console.log(message)
+	  })
+
+
+    */
+
+    </script>
+
+
+
+
+  </body>
+</html>

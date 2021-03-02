@@ -1,0 +1,337 @@
+<html>
+  <head>
+
+        <meta charset="utf-8">
+        <title>DeepParking</title>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" crossorigin="" />
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js" crossorigin=""></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/example/mobile.css" />
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+	<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.min.js"></script>
+       
+
+
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+	
+
+
+         <style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		#map {
+			width: 600px;
+			height: 400px;
+		}
+                body { padding: 0; margin: 0; } 
+                #map { height: 100%; width: 100vw; }
+
+                .clusterFree {
+			background-color: greenyellow;
+			text-align: center;
+			font-size: 12px;
+
+                        border-radius: 50%;
+                        border-style: solid;
+                        /*font-weight: bold*/;
+
+                        background: rgba(110, 204, 57, 0.6);
+                        border-color: rgba(0, 255, 0, 0.6);
+                        font: "Helvetica Neue", Arial, Helvetica, sans-serif;
+
+
+		}
+		.clusterBusy {
+			width: 40px;
+			height: 40px;
+			background-color: red;
+			text-align: center;
+			font-size: 12px;
+
+                        border-radius: 50%;
+                        border-style: solid;
+                        /*font-weight: bold*/;
+
+                        background: rgba(240, 110, 57, 0.6);
+                        border-color: rgba(255, 0, 0, 0.6);
+                        font: "Helvetica Neue", Arial, Helvetica, sans-serif;
+
+		}
+
+        </style>
+
+  </head>
+
+
+  <body>
+    
+     <div id="map"></div>
+
+    <script type="text/javascript" charset="utf-8">
+
+
+        //_______________________map________________________
+
+
+       
+                //______________________icons markers_________________
+		var freeIcon = new L.Icon({
+		  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+		  shadowUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
+		  iconSize: [25, 41],
+		  iconAnchor: [12, 41],
+		  popupAnchor: [1, -34],
+		  shadowSize: [41, 41]
+		});
+
+		var busyIcon = new L.Icon({
+		  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+		  shadowUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
+		  iconSize: [25, 41],
+		  iconAnchor: [12, 41],
+		  popupAnchor: [1, -34],
+		  shadowSize: [41, 41]
+		});
+
+                function setState(marker, flag_free = true){
+                  
+                  marker.flag_free = flag_free;
+                  if(marker.flag_free)
+                     marker.setIcon(freeIcon);
+                  else
+                     marker.setIcon(busyIcon);
+ 
+                }
+                //_____________________________________________________
+
+
+	var map = L.map('map').fitWorld();
+	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+		maxZoom: 25,
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+		id: 'mapbox/streets-v11',
+		tileSize: 512,
+		zoomOffset: -1
+	}).addTo(map);
+
+       
+
+        function createMarkerClusterGroup() {
+			var options = {
+				maxClusterRadius: 50,
+                                disableClusteringAtZoom: 18,
+                                animateAddingMarkers : true,
+				iconCreateFunction: function (cluster) {
+					var markers = cluster.getAllChildMarkers();
+                                        n = 0;
+                                        for(var i = 0; i < markers.length; i++){
+                                           if(markers[i].flag_free){
+                                             n = n + 1;     
+                                           }
+                                        }
+                                        //n = markers.length;
+                                        if(n==0){
+                                           className = 'clusterBusy';
+                                        }else{
+                                           className = 'clusterFree';
+                                        }
+                                        txt = "<p>" + n.toString() + "</p>";
+
+					return L.divIcon({ html: txt, className: className, iconSize: L.point(40, 40) });
+				},
+				//Disable all of the defaults & specify the pane:
+				spiderfyOnMaxZoom: false,
+				showCoverageOnHover: false,
+				zoomToBoundsOnClick: true
+			};
+
+
+		    var mcg = L.markerClusterGroup(options);
+		    return(mcg);
+        }
+
+
+	var markers = createMarkerClusterGroup();
+        map.addLayer(markers);
+
+
+        //__________________________________________________
+
+
+
+        //this class is different to the DataPacket class of the worker
+        class DataPacket{
+
+             constructor() {
+
+		     this.data = {};
+
+             }
+
+             setData(data) {
+
+                     for(var key in data){
+
+                        var lat = data[key][0];
+                        var lon = data[key][1];
+                        var flag_free = (data[key][2] > 0) ? true: false;
+                      
+                        var marker = L.marker(L.latLng(lat, lon));
+                        setState(marker, flag_free);
+                        this.data[key] = marker;
+                        markers.addLayer(marker);
+
+                     }
+
+             }
+
+             update(diff) {
+
+                     //console.log("_________")
+                     //console.log(this.data)
+                     var list_delete = diff['D'];
+		     for(var i = 0; i < list_delete.length; i++){
+
+                        key = list_delete[i];
+                        if(key in this.data){
+                           markers.removeLayer(this.data[key]);
+                           delete this.data[key];
+                        }
+
+		     }
+
+                     var data_modify = diff['M'];
+		     for(var key in data_modify){
+
+                        if(key in this.data){
+
+                           var lat = data_modify[key][0];
+                           var lon = data_modify[key][1];
+                           var flag_free = (data_modify[key][2] > 0) ? true: false;
+                           var marker = this.data[key];
+                           console.log( marker);
+                           marker.setLatLng(L.latLng(lat, lon));
+                           setState(marker, flag_free);
+
+                        }
+
+		     }
+
+                    
+                     var data_new = diff['N'];
+		     for(var key in data_new){
+
+                        var lat = data_new[key][0];
+                        var lon = data_new[key][1];
+                        var flag_free = (data_new[key][2] > 0) ? true: false;
+                      
+                        var marker = L.marker(L.latLng(lat, lon));
+                        setState(marker, flag_free);
+                        this.data[key] = marker;
+                        markers.addLayer(marker);
+
+		     }
+
+
+             }
+
+
+             reset() {
+
+                for(var key in this.data){
+
+                   markers.removeLayer(this.data[key]);
+
+                }
+
+                this.data = {};
+
+             }
+
+             show(){
+
+                   console.log("dato")
+                   console.log(this.data)
+
+             }
+
+
+        }
+
+
+        dataPacket = new DataPacket();
+
+
+
+        var socket_map = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/map', { transports: ['websocket'] })
+        console.log(location.protocol + '//' + document.domain + ':' + location.port + '/map');
+
+
+
+        var utc = '1970-01-01 00:00:00';
+        var id_session = "";
+
+        socket_map.on('update', function(msg) {
+
+           console.log("update");
+           //console.log(utc)
+           //console.log(Date.parse(msg['utc']))
+
+           if(Date.parse(utc) < Date.parse(msg['utc'])){
+
+             //utc = msg['utc'];
+             console.log("utc enviado");
+             console.log(utc);
+             socket_map.emit('get_data', {'utc': utc, 'id_session': id_session});
+            
+           }
+
+	});
+
+
+
+       socket_map.on('new_data', function(msg) {
+
+
+           console.log("new data");
+           console.log(msg);
+
+           utc = msg['utc'];
+           id_session = msg['id_session'];
+           console.log("nuevo utc")
+           console.log(utc)
+           
+           var data = msg['data'];
+
+           if(msg['R']){
+               dataPacket.reset();
+               dataPacket.setData(data);
+            }else{
+
+               dataPacket.update(data)
+               data['D']
+
+            }
+
+           
+            dataPacket.show()
+
+
+	});
+
+
+
+    </script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,72 @@
+<html>
+  <head>
+
+
+     <meta charset="utf-8">
+  
+     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+     <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+
+
+  </head>
+
+
+  <body>
+    
+     <h1>Hi, I am a parking lot user</h1>
+
+     <textarea id="myrequestid" rows="20" cols="150">
+     </textarea>
+     <button type="button" id="mybuttonGet">get state</button>
+
+
+     <button type="button" id="mybutton">update worker</button>
+
+<script type="text/javascript" charset="utf-8">
+
+
+      var socket_parkingLot = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/parkingLot', { transports: ['websocket'] });
+      console.log("socket_parkingLot");
+      console.log(location.protocol + '//' + document.domain + ':' + location.port + '/parkingLot');
+      
+
+
+      
+      $('#mybuttonGet').click(function() {
+
+            var text = $('#myrequestid').val();
+            var json_data = JSON.parse(text);  
+            socket_parkingLot.emit('get_state', json_data);
+
+
+    
+      });
+
+
+      socket_parkingLot.on('updateParkingLots', function(data) {
+
+         console.log('updateParkingLots');
+         console.log(data);
+
+      });
+
+
+
+
+      $('#mybutton').click(function() {
+
+            console.log('update_worker');
+            socket_parkingLot.emit('update_worker', {"nombre": "roger"});
+
+    
+      });
+
+
+    </script>
+
+
+
+
+  </body>
+</html>
