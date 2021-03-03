@@ -106,6 +106,9 @@ class DataPacket:
 
 
      def get_utc_now(self):
+         print("get utc")
+         print(id(self.utc))
+         print(self.utc)
          if(len(self.utc) == 0):
              return '1970-01-01 00:00:00'
          else:
@@ -166,18 +169,21 @@ def map_connect():
 
 @socketio.on('get_data', namespace = '/map')
 def map_connect(data_user):
-        print('get data')
-         
+        print('____get data__')
+        print("dato actual")
+        print(dataPacket.data)
+
         if(data_user['id_session'] != dataPacket.id_session):
-          print("enviar dato completo, id_session diferente")
+          print("c1: enviar dato completo, id_session diferente")
           emit('new_data', {'data': dataPacket.data, 'R': True, 'utc': dataPacket.get_utc_now(), 'id_session': dataPacket.id_session}, namespace = '/map')
         else:
             if(data_user['utc'] in dataPacket.history):
+                print("c2")
                 print("utc recibido")
                 print(data_user['utc'])
                 emit('new_data', {'data': dataPacket.history[data_user['utc']], 'R': False, 'utc': dataPacket.get_utc_now(), 'id_session': dataPacket.id_session}, namespace = '/map')
             else:
-                print("enviar dato completo, no hay historico")
+                print("c3: enviar dato completo, no hay historico")
                 emit('new_data', {'data': dataPacket.data, 'R': True, 'utc': dataPacket.get_utc_now(), 'id_session': dataPacket.id_session}, namespace = '/map')
 
 
