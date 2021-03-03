@@ -162,7 +162,7 @@ def map():
 @socketio.on('connect', namespace = '/map')
 def map_connect():
         print('map user connected')
-        emit('update', {'utc': dataPacket.get_utc_now()}, namespace = '/map', broadcast=True)
+        emit('update', {'utc': dataPacket.get_utc_now()}, namespace = '/map')
 
 @socketio.on('get_data', namespace = '/map')
 def map_connect(data_user):

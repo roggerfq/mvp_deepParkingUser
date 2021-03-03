@@ -177,6 +177,12 @@
 
       });
 
+      socket_worker.on('start', function() {
+        
+         console.log("worker connected");
+
+      });
+
       socket_worker.on('disconnect', function() {
         
          dataPacket.reset();

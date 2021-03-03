@@ -23,10 +23,18 @@
 
          <style>
 
+		body.noscroll{
+		    position:fixed;
+		    overflow:hidden;
+                    width:100%; 
+                    height:100%;
+		}
+
 
 		#map {
 			width: 100%;
-			height: 90%;
+			height: calc(100% - 100px);
+                        z-index: -1;
 		}
 
 
@@ -81,6 +89,8 @@
 		     font-size: 30px;
 
 
+                     min-height: 50px;
+
                 }
 
 		#nav > p {
@@ -103,6 +113,8 @@
 		  font-weight: 700;
 		  cursor: pointer;
 		  text-align: center;
+
+                  min-height: 50px;
 
 		}
 
@@ -358,8 +370,6 @@
         socket_map.on('update', function(msg) {
 
            console.log("update");
-           //console.log(utc)
-           //console.log(Date.parse(msg['utc']))
 
            if(Date.parse(utc) < Date.parse(msg['utc'])){
 
