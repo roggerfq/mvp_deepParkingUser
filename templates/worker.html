@@ -183,6 +183,14 @@
 
       });
 
+      //_____________for testing_____________
+      socket_worker.on('newMapUser', function(data) {
+        
+         console.log("new map user");
+
+      });
+      //______________________________________
+
       socket_worker.on('disconnect', function() {
         
          dataPacket.reset();

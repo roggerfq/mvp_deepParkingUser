@@ -169,7 +169,13 @@ def map():
 
 @socketio.on('connect', namespace = '/map')
 def map_connect():
-        print('map user connected')
+        print('map user connected') 
+
+        #_______________for testing___________________
+        #this trick (broadcast=True) works because only there is one worker for this implementation
+        emit('newMapUser', {'msg': "new map user"}, namespace = '/worker', broadcast=True)
+        #_____________________________________________
+
         emit('update', {'utc': dataPacket.get_utc_now()}, namespace = '/map')
 
 @socketio.on('get_data', namespace = '/map')
