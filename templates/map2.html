@@ -369,6 +369,10 @@
         socket_map.on('update', function(msg) {
 
            console.log("update");
+           console.log("local utc:");
+           console.log(utc);
+           console.log("server utc:");
+           console.log(msg['utc']);
 
            if(Date.parse(utc) < Date.parse(msg['utc'])){
 
