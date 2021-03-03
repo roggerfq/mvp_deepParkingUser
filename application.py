@@ -55,11 +55,12 @@ class DataPacket:
          for key in new_data:
              self.data[key] = new_data[key]
 
-         print("_________________")
+         print("____________")
          print("dato")
          print(self.data)
          print("paquete")
          print(packet)
+         print("____________")
 
          
 
@@ -106,9 +107,11 @@ class DataPacket:
 
 
      def get_utc_now(self):
-         print("get utc")
+         print("____get utc______")
          print(id(self.utc))
          print(self.utc)
+         print("data")
+         print(self.data)
          if(len(self.utc) == 0):
              return '1970-01-01 00:00:00'
          else:
@@ -134,6 +137,8 @@ def worker_connect():
 @socketio.on('new_data', namespace = '/worker')
 def worker_data(packet):
         global dataPacket
+        print("actual dato antes de push")
+        print(dataPacket.data)
         dataPacket.push(packet)
         emit('update', {'utc': dataPacket.get_utc_now()}, namespace = '/map', broadcast=True)
         #we send utc data to the parking lot user, but in this implementation the parking lot user does not use it
