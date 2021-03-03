@@ -19,7 +19,7 @@ app.config["SECRET_KEY"] = os.environ.get('SECRET_KEY')
 #socketio = SocketIO(app);
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-block_some_templates = True
+block_some_templates = False
 
 
 ###################### WORKER ##########################
